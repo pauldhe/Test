@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>글로벌 금리·크레딧 대시보드</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 rx=%273%27 fill=%27%232563eb%27/%3E%3Cpath d=%27M3 11.5L6 7l3 2.5L13 4%27 stroke=%27white%27 stroke-width=%271.6%27 fill=%27none%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>글로벌 금리 · 크레딧 대시보드</h1>
+    <span class="subtitle" id="subtitle">불러오는 중…</span>
+    <span class="spacer"></span>
+    <span class="asof" id="asof"></span>
+    <button class="icon-btn" id="theme-toggle" type="button" title="테마 전환">◐ 테마</button>
+  </header>
+
+  <div id="banners"></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true"  data-view="overview">개요</button>
+    <button role="tab" aria-selected="false" data-view="chart">차트</button>
+    <button role="tab" aria-selected="false" data-view="curve">수익률 곡선</button>
+    <button role="tab" aria-selected="false" data-view="quality">데이터 품질</button>
+  </nav>
+
+  <!-- ── 개요 ───────────────────────────────────────────── -->
+  <section class="view" id="view-overview">
+    <div class="panel">
+      <div class="controls">
+        <div class="chips" id="cat-chips"></div>
+        <span class="spacer"></span>
+        <input type="search" id="search" placeholder="지표명 또는 티커 검색…" style="width:230px">
+        <label class="opt"><input type="checkbox" id="hide-empty" checked> 데이터 없는 지표 숨기기</label>
+      </div>
+      <div class="table-scroll">
+        <table id="ov-table">
+          <thead>
+            <tr>
+              <th class="left" style="width:26px"></th>
+              <th class="left" data-sort="notation">지표</th>
+              <th data-sort="last">최종값</th>
+              <th data-sort="1d">1일</th>
+              <th data-sort="1w">1주</th>
+              <th data-sort="1m">1개월</th>
+              <th data-sort="3m">3개월</th>
+              <th data-sort="ytd">연초대비</th>
+              <th data-sort="1y">1년</th>
+              <th class="left" style="width:96px">추이 (1년)</th>
+              <th data-sort="n">관측치</th>
+            </tr>
+          </thead>
+          <tbody id="ov-body"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="ov-empty" hidden>조건에 맞는 지표가 없습니다.</div>
+    </div>
+  </section>
+
+  <!-- ── 차트 ───────────────────────────────────────────── -->
+  <section class="view" id="view-chart" hidden>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>지표 선택</h2>
+        <span class="hint" id="pick-count">0개 선택 · 최대 8개</span>
+        <span class="spacer"></span>
+        <input type="search" id="pick-search" placeholder="검색…" style="width:200px">
+        <button class="icon-btn" id="pick-clear" type="button">전체 해제</button>
+      </div>
+      <div class="panel-body">
+        <div class="picker" id="picker"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="controls">
+        <div class="seg" id="range-seg">
+          <button type="button" data-range="90">3개월</button>
+          <button type="button" data-range="365">1년</button>
+          <button type="button" data-range="1095">3년</button>
+          <button type="button" data-range="1825">5년</button>
+          <button type="button" data-range="3650" aria-pressed="true">10년</button>
+          <button type="button" data-range="0">전체</button>
+        </div>
+        <span class="spacer"></span>
+        <label class="opt"><input type="checkbox" id="rebase"> 기준시점 100으로 환산</label>
+      </div>
+      <div class="banner scale-hint" id="scale-hint" hidden></div>
+      <div class="chart-shell">
+        <canvas class="chart" id="main-chart" height="420"></canvas>
+        <div class="tooltip" id="chart-tip"></div>
+      </div>
+      <div class="legend" id="chart-legend"></div>
+      <div class="empty" id="chart-empty">위에서 지표를 선택하면 차트가 표시됩니다.</div>
+    </div>
+  </section>
+
+  <!-- ── 수익률 곡선 ─────────────────────────────────────── -->
+  <section class="view" id="view-curve" hidden>
+    <div class="panel">
+      <div class="controls">
+        <div class="chips" id="curve-countries"></div>
+        <span class="spacer"></span>
+        <label class="opt">기준일 <select id="curve-date"></select></label>
+        <label class="opt"><input type="checkbox" id="curve-compare" checked> 1년 전·3년 전 비교</label>
+      </div>
+      <div class="chart-shell">
+        <canvas class="chart" id="curve-chart" height="400"></canvas>
+        <div class="tooltip" id="curve-tip"></div>
+      </div>
+      <div class="legend" id="curve-legend"></div>
+      <div class="empty" id="curve-empty" hidden>선택한 국가의 곡선 데이터가 없습니다.</div>
+    </div>
+  </section>
+
+  <!-- ── 데이터 품질 ─────────────────────────────────────── -->
+  <section class="view" id="view-quality" hidden>
+    <div class="panel">
+      <div class="panel-head"><h2>수록 현황</h2></div>
+      <div class="panel-body"><div class="stat-grid" id="q-stats"></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>커버리지가 낮은 지표</h2>
+        <span class="hint">전체 영업일 대비 관측치 비중 40% 미만</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th class="left" data-sort="notation">지표</th><th class="left">티커</th>
+            <th>관측치</th><th>커버리지</th><th class="left">시작일</th><th class="left">종료일</th>
+          </tr></thead>
+          <tbody id="q-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>해석 시 유의사항</h2></div>
+      <div class="panel-body"><div class="notes" id="q-notes"></div></div>
+    </div>
+  </section>
+
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>
