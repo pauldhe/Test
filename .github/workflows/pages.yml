@@ -1,0 +1,82 @@
+# Publishes the dashboard to GitHub Pages with SYNTHETIC data.
+#
+# The real workbook is licensed vendor material held in the private `Data`
+# repository and is never available to this workflow. The published site is
+# built from scripts/make_demo_data.py instead, and the dashboard renders a
+# "데모 데이터" banner so nobody mistakes it for market data.
+
+name: Deploy demo dashboard to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deployment finish rather than cancelling it mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install openpyxl
+
+      - name: Generate synthetic workbook
+        run: python scripts/make_demo_data.py
+
+      - name: Build dashboard data
+        run: python scripts/build_data.py --workbook data/demo_bb.xlsx
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r assets _site/
+          # data/ only -- the generated .xlsx is an input, not part of the site.
+          mkdir -p _site/data
+          cp data/index.json _site/data/
+          cp -r data/series _site/data/
+
+      - name: Fail if the build produced no data
+        run: |
+          test -s _site/data/index.json || { echo "index.json missing or empty"; exit 1; }
+          python - <<'PY'
+          import json, sys
+          index = json.load(open("_site/data/index.json", encoding="utf-8"))
+          assert index["demo"] is True, "site would publish non-demo data"
+          assert index["totals"]["series"] > 0, "no series in bundle"
+          print(f"ok: {index['totals']['series']} synthetic series, "
+                f"{index['totals']['observations']:,} observations")
+          PY
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

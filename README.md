@@ -4,6 +4,12 @@ Bloomberg 데이터벤더 추출물(254개 시계열 · 2001-12-03 ~ 2026-07-28)
 정적 대시보드입니다. 빌드 도구도, 외부 라이브러리도 없습니다 — 차트는 캔버스에
 직접 그립니다.
 
+**데모 보기 → https://pauldhe.github.io/Test/**
+
+공개된 페이지는 합성 난수로 채운 데모 데이터로 빌드됩니다. 화면 구성과 동작을
+확인하는 용도이며 실제 시장 데이터가 아닙니다 (페이지 상단에 배너로 표시됩니다).
+실제 데이터로 보려면 아래 절차대로 로컬에서 빌드하십시오.
+
 > **이 저장소에는 데이터가 없습니다.**
 > 원본 워크북은 라이선스가 있는 벤더 자료라서 private
 > [`pauldhe/Data`](https://github.com/pauldhe/Data) 저장소에만 보관합니다.
@@ -66,6 +72,7 @@ python -m http.server 8000
 ## 구조
 
 ```
+.github/workflows/pages.yml  데모 데이터로 GitHub Pages 배포
 index.html              대시보드 셸
 assets/app.js           상태·렌더링·캔버스 차트 (의존성 없음)
 assets/styles.css       라이트/다크 테마
