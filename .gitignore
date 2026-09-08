@@ -1,0 +1,16 @@
+# The dashboard's data is built from a licensed Bloomberg extract that lives in
+# the private `Data` repository. Nothing derived from it belongs in this public
+# repository -- build it locally instead:
+#
+#   python scripts/build_data.py --workbook ../Data/data/raw/data_bb.xlsx
+#
+data/
+
+# Generated demo workbook (scripts/make_demo_data.py recreates it)
+*.xlsx
+*.xlsm
+
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
